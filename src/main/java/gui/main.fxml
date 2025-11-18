@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+
+<GridPane fx:controller="main.java.gui.GUIController"
+          xmlns:fx="http://javafx.com/fxml"
+          hgap="10" vgap="10">
+
+    <Label fx:id="taWorkingLabel" text="TAs Working: 0" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <Label fx:id="taSleepingLabel" text="TAs Sleeping: 0" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <Label fx:id="waitingStudentsLabel" text="Students Waiting: 0" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <Label fx:id="studentsLeavingLabel" text="Students Leaving: 0" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+
+    <Button text="Start Simulation" GridPane.rowIndex="4" GridPane.columnIndex="0" onAction="#startSimulation"/>
+</GridPane>
