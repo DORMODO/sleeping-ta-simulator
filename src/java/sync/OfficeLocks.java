@@ -1,4 +1,4 @@
-package main.java.sync;
+package sync;
 
 public class OfficeLocks {
 }
