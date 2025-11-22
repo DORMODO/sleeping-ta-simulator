@@ -3,14 +3,10 @@
   <component name="NewModuleRootManager">
     <output url="file://$MODULE_DIR$/out/production" />
     <output-test url="file://$MODULE_DIR$/out/test" />
-
     <content url="file://$MODULE_DIR$">
-      <!-- Java source code -->
-      <sourceFolder url="file://$MODULE_DIR$/src/java" isTestSource="false" />
-      <!-- Resources (FXML, CSS, properties) -->
       <sourceFolder url="file://$MODULE_DIR$/src/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
-
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
