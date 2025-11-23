@@ -32,9 +32,13 @@ public class Controller {
     }
 
     public void startSimulation(int studentCount, int chairCount, int taCount) {
-        // TODO: Set the semaphore permits based on user input
+        // Initialize semaphores with user-provided values
+        availableTAs.release(taCount);
+        availableChairs.release(chairCount);
 
-        // TODO: Initialize the sleeping TAs counter
+        // All TAs start sleeping
+        sleepingTAs.set(taCount);
+        updateGUI();
 
         // Create and start TA threads
         tas = new TA[taCount];
