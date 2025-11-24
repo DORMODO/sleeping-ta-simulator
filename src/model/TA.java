@@ -37,10 +37,10 @@ public class TA extends Thread {
             }
 
             setState(TAState.WORKING);
-            
+
             // just to make sure, we already have GUI... 
             System.out.println("TA " + id + " is helping a student...");
-;
+            
             try {
                 Thread.sleep(2000 + (long)(Math.random() * 2000));
             } catch (InterruptedException e) {
