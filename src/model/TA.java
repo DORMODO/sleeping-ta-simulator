@@ -1,4 +1,4 @@
-package model;
+﻿package model;
 
 import controller.Controller;
 import model.enums.TAState;
@@ -9,9 +9,13 @@ import model.enums.TAState;
  * YOUR TASK: Implement the TA's behavior in the run() method.
  * <p>
  * TA Lifecycle:
- * SLEEPING → (wait for student) → WORKING → (help student) → SLEEPING (repeat)
+ * SLEEPING  (wait for student)  WORKING  (help student)  SLEEPING (repeat)
  */
+/* تحياتي ... زهران للصبح  */
+
 public class TA extends Thread {
+
+
     private int id;
     private TAState state;
     private Controller controller;
@@ -25,21 +29,28 @@ public class TA extends Thread {
     @Override
     public void run() {
         while (true) {
+            try {
+                controller.waitForStudent();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
 
-            // TODO: Step 1 - Wait for a student to arrive
+            setState(TAState.WORKING);
+            
+            // just to make sure, we already have GUI... 
+            System.out.println("TA " + id + " is helping a student...");
+;
+            try {
+                Thread.sleep(2000 + (long)(Math.random() * 2000));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+       
+            controller.finishHelping();
 
-            // TODO: Step 2 - Woke up! Change state to WORKING
-
-            // TODO: Print a message: "TA X is helping a student..."
-
-            // TODO: Step 3 - Simulate helping (sleep for 2-4 seconds)
-            // HINT: Thread.sleep(2000 + (long)(Math.random() * 2000));
-
-            // TODO: Step 4 - Done helping
-
-            // TODO: Step 5 - Notify controller that TA finished
-
-            // TODO: Step 6 - Go back to SLEEPING state
+            setState(TAState.SLEEPING);
 
         }
     }
