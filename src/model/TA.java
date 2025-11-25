@@ -11,11 +11,10 @@ import model.enums.TAState;
  * TA Lifecycle:
  * SLEEPING  (wait for student)  WORKING  (help student)  SLEEPING (repeat)
  */
+
 /* تحياتي ... زهران للصبح  */
 
 public class TA extends Thread {
-
-
     private int id;
     private TAState state;
     private Controller controller;
@@ -40,7 +39,7 @@ public class TA extends Thread {
 
             // just to make sure, we already have GUI... 
             System.out.println("TA " + id + " is helping a student...");
-            
+
             try {
                 Thread.sleep(2000 + (long)(Math.random() * 2000));
             } catch (InterruptedException e) {
