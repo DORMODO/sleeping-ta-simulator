@@ -62,15 +62,39 @@ public class Controller {
      * <p>
      * LOGIC TO IMPLEMENT:
      * 1. Try to get a chair (non-blocking) - if no chairs, student must leave
+     * 
      * 2. If got a chair, increment waiting counter and update GUI
+     * 
      * 3. Signal a TA that a student is waiting
+     * 
      * 4. Wait (blocking) for a TA to become available
+     * 
      * 5. Once TA is available, decrement waiting counter and free the chair
      *
      * @return true if student got help, false if no chairs available
      */
-    public boolean getHelp(Student student) throws InterruptedException {
-        // TODO
+
+    public boolean getHelp(Student student){
+        if(!availableChairs.tryAcquire()) {
+            // No chairs available, student leaves
+            studentsLeft.incrementAndGet();
+            updateGUI();
+            return false;
+        }
+        // Got a chair, increment waiting students
+        waitingStudents.incrementAndGet();
+        updateGUI();
+        // Signal a TA that a student is waiting
+        studentsWaiting.release();
+        try {            // Wait for a TA to become available
+            availableTAs.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // Student is now being helped, decrement waiting students and free chair
+        waitingStudents.decrementAndGet();
+        availableChairs.release();
+        updateGUI();
         return true;
     }
 
