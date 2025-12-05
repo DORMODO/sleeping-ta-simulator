@@ -102,7 +102,9 @@ public class Controller {
      * Called by student when done getting help.
      */
     public void releaseTA() {
-        // TODO: Make the TA available again
+        
+        availableTAs.release();
+        updateGUI();
     }
 
     // ==================== TA METHODS ====================
