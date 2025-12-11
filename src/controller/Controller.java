@@ -3,30 +3,30 @@ package controller;
 import gui.MainGUI;
 import model.Student;
 import model.TA;
+import model.enums.StudentState;
 
 import javax.swing.SwingUtilities;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Controller {
+    // Core synchronization primitives
+    private final Semaphore availableTAs;      // How many TAs are free to help
+    private final Semaphore availableChairs;   // How many chairs are free
+    private final Semaphore studentsWaiting;   // Signal: how many students need help
 
-    private final Semaphore availableTAs;
-    private final Semaphore availableChairs;
-    private final Semaphore studentsWaiting;
-
-    // Counters for GUI
+    // Thread-safe counters for GUI
     private final AtomicInteger workingTAs = new AtomicInteger(0);
     private final AtomicInteger sleepingTAs = new AtomicInteger(0);
     private final AtomicInteger waitingStudents = new AtomicInteger(0);
     private final AtomicInteger studentsLeft = new AtomicInteger(0);
 
-    private MainGUI gui;
-    private TA[] tas;
-    private Student[] students;
+    private final MainGUI gui;
 
     public Controller(MainGUI gui) {
         this.gui = gui;
-        this.availableTAs = new Semaphore(0, true);
+        // Start with 0 - values will be set when simulation starts
+        this.availableTAs = new Semaphore(0, true);      // true = fair ordering
         this.availableChairs = new Semaphore(0, true);
         this.studentsWaiting = new Semaphore(0, true);
     }
@@ -41,16 +41,16 @@ public class Controller {
         updateGUI();
 
         // Create and start TA threads
-        tas = new TA[taCount];
+        TA[] tas = new TA[taCount];
         for (int i = 0; i < taCount; i++) {
-            tas[i] = new TA(i + 1, this);
+            tas[i] = new TA(i + 1, this);  // IDs start from 1 for readability
             tas[i].start();
         }
 
         // Create and start Student threads
-        students = new Student[studentCount];
+        Student[] students = new Student[studentCount];
         for (int i = 0; i < studentCount; i++) {
-            students[i] = new Student(i + 1, this);
+            students[i] = new Student(i + 1, this);  // IDs start from 1
             students[i].start();
         }
     }
@@ -59,18 +59,43 @@ public class Controller {
 
     /**
      * Called by a student trying to get help.
-     * <p>
-     * LOGIC TO IMPLEMENT:
-     * 1. Try to get a chair (non-blocking) - if no chairs, student must leave
-     * 2. If got a chair, increment waiting counter and update GUI
-     * 3. Signal a TA that a student is waiting
-     * 4. Wait (blocking) for a TA to become available
-     * 5. Once TA is available, decrement waiting counter and free the chair
-     *
-     * @return true if student got help, false if no chairs available
+     * Flow: Check TA first → Check chairs if busy → Wait or leave
+     * Returns true if student got help, false if student left
      */
     public boolean getHelp(Student student) throws InterruptedException {
-        // TODO
+        // STEP 1: Check if any TA is available (non-blocking)
+        if (availableTAs.tryAcquire()) {
+            // SUCCESS: A TA is available! Student enters immediately
+            student.setState(StudentState.GETTING_HELP);
+            updateGUI();
+            return true;
+        }
+
+        // STEP 2: No TA available - All TAs are busy. Check for available chairs
+        if (!availableChairs.tryAcquire()) {
+            // No chairs available - student must leave
+            studentsLeft.incrementAndGet();
+            updateGUI();
+            return false;
+        }
+
+        // STEP 3: Got a chair! Now sit and wait
+        student.setState(StudentState.WAITING);
+        waitingStudents.incrementAndGet();
+        updateGUI();
+
+        // STEP 4: Signal that a student is waiting (wake up a sleeping TA if any)
+        studentsWaiting.release();
+
+        // STEP 5: Wait for a TA to become available
+        availableTAs.acquire();  // Blocks until a TA is free
+
+        // STEP 6: Got a TA! Stand up from chair and transition to getting help
+        waitingStudents.decrementAndGet();
+        availableChairs.release();  // Free the chair for next student
+        student.setState(StudentState.GETTING_HELP);
+        updateGUI();
+
         return true;
     }
 
@@ -78,7 +103,7 @@ public class Controller {
      * Called by student when done getting help.
      */
     public void releaseTA() {
-        // TODO: Make the TA available again
+        availableTAs.release();  // Make TA available again
     }
 
     // ==================== TA METHODS ====================
@@ -86,21 +111,31 @@ public class Controller {
     /**
      * Called by TA to wait for a student to help.
      * TA goes to sleep until a student signals.
-     *
-     * LOGIC TO IMPLEMENT:
-     * 1. TA is going to sleep - update counters
-     * 2. Wait (blocking) for a student to signal
-     * 3. TA woke up - update counters (now working)
      */
     public void waitForStudent() throws InterruptedException {
-        // TODO
+        // Wait for a student to signal (blocks here)
+        // Note: TA is already counted as sleeping from initialization
+        studentsWaiting.acquire();
+
+        // Woke up! A student needs help - update state from sleeping to working
+        sleepingTAs.decrementAndGet();
+        workingTAs.incrementAndGet();
+        updateGUI();
     }
 
     /**
      * Called by TA when finished helping a student.
      */
     public void finishHelping() {
-        // TODO: Update the working TAs counter
+        workingTAs.decrementAndGet();
+        updateGUI();
+    }
+
+    /**
+     * Called by TA when going back to sleep.
+     */
+    public void taGoingToSleep() {
+        sleepingTAs.incrementAndGet();
         updateGUI();
     }
 

@@ -3,18 +3,10 @@ package model;
 import controller.Controller;
 import model.enums.TAState;
 
-/**
- * TA Thread - Represents a Teaching Assistant
- * <p>
- * YOUR TASK: Implement the TA's behavior in the run() method.
- * <p>
- * TA Lifecycle:
- * SLEEPING → (wait for student) → WORKING → (help student) → SLEEPING (repeat)
- */
 public class TA extends Thread {
-    private int id;
+    private final int id;
     private TAState state;
-    private Controller controller;
+    private final Controller controller;
 
     public TA(int id, Controller controller) {
         this.id = id;
@@ -24,28 +16,30 @@ public class TA extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        try {
+            while (true) {
+                // STEP 1: Wait for a student (TA is sleeping here)
+                controller.waitForStudent();
 
-            // TODO: Step 1 - Wait for a student to arrive
+                // STEP 2: Woke up! Now helping a student
+                setState(TAState.WORKING);
+                System.out.println("TA " + id + " is helping a student...");
 
-            // TODO: Step 2 - Woke up! Change state to WORKING
+                // STEP 3: Help takes time (2-4 seconds)
+                Thread.sleep(2000 + (long)(Math.random() * 2000));
 
-            // TODO: Print a message: "TA X is helping a student..."
+                // STEP 4: Done helping
+                System.out.println("TA " + id + " finished helping student.");
+                controller.finishHelping();
 
-            // TODO: Step 3 - Simulate helping (sleep for 2-4 seconds)
-            // HINT: Thread.sleep(2000 + (long)(Math.random() * 2000));
-
-            // TODO: Step 4 - Done helping
-
-            // TODO: Step 5 - Notify controller that TA finished
-
-            // TODO: Step 6 - Go back to SLEEPING state
-
+                // STEP 5: Back to sleeping (loop continues)
+                setState(TAState.SLEEPING);
+                controller.taGoingToSleep();
+            }
+        } catch (InterruptedException e) {
+            System.out.println("TA " + id + " thread interrupted.");
+            Thread.currentThread().interrupt();
         }
-    }
-
-    public TAState getTAState() {
-        return state;
     }
 
     public void setState(TAState newState) {

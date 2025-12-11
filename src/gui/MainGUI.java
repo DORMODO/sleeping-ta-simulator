@@ -27,7 +27,7 @@ public class MainGUI extends JFrame {
         l1.setBounds(20, 20, 100, 30);
         add(l1);
 
-        tfStudents = new JTextField();
+        tfStudents = new JTextField("5");
         tfStudents.setBounds(120, 20, 80, 30);
         add(tfStudents);
 
@@ -35,7 +35,7 @@ public class MainGUI extends JFrame {
         l2.setBounds(20, 60, 100, 30);
         add(l2);
 
-        tfChairs = new JTextField();
+        tfChairs = new JTextField("3");
         tfChairs.setBounds(120, 60, 80, 30);
         add(tfChairs);
 
@@ -43,7 +43,7 @@ public class MainGUI extends JFrame {
         l3.setBounds(20, 100, 100, 30);
         add(l3);
 
-        tfTAs = new JTextField();
+        tfTAs = new JTextField("1");
         tfTAs.setBounds(120, 100, 80, 30);
         add(tfTAs);
 

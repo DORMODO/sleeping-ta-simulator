@@ -3,23 +3,10 @@ package model;
 import controller.Controller;
 import model.enums.StudentState;
 
-
-/**
- * Student Thread - Represents a student seeking help from TAs
- * <p>
- * YOUR TASK: Implement the Student's behavior in the run() method.
- * <p>
- * Student Lifecycle:
- * ARRIVING → Try to get help → GETTING_HELP → LEAVING → (break) → ARRIVING (repeat)
- *                   ↓
- *               (no chairs)
- *                   ↓
- *             RETURNING_LATER → (wait) → ARRIVING (repeat)
- */
 public class Student extends Thread {
-    private int id;
+    private final int id;
     private StudentState state;
-    private Controller controller;
+    private final Controller controller;
 
     public Student(int id, Controller controller) {
         this.id = id;
@@ -29,44 +16,49 @@ public class Student extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        try {
+            while (true) {
+                // STEP 1: Student arrives at office
+                setState(StudentState.ARRIVING);
+                System.out.println("Student " + id + " is arriving...");
 
-            // TODO: Step 1 - Student arrives at office
+                // Think about the problem before going to TA (0-2 seconds)
+                Thread.sleep((long)(Math.random() * 2000));
 
-            // TODO: Think about the problem (sleep 0-2 seconds randomly)
-            // HINT: Thread.sleep((long)(Math.random() * 2000));
+                // STEP 2: Try to get help from a TA
+                boolean gotHelp = controller.getHelp(this);
 
-            // TODO: Step 2 - Try to get help from Controller
+                if (gotHelp) {
+                    // SUCCESS: Got a TA to help
+                    setState(StudentState.GETTING_HELP);
+                    System.out.println("Student " + id + " is getting help from TA...");
 
-            // TODO: Step 3 - Check if got help (true/false)
+                    // Getting help takes time (2-4 seconds)
+                    Thread.sleep(2000 + (long)(Math.random() * 2000));
 
-            // IF GOT HELP (true):
-            {
-                // TODO: Change state to GETTING_HELP
-                // TODO: Print: "Student X is getting help from TA..."
+                    // STEP 3: Done getting help, leaving
+                    setState(StudentState.LEAVING);
+                    System.out.println("Student " + id + " got help and is leaving!");
 
-                // TODO: Getting help takes time (sleep 2-4 seconds)
+                    // Release the TA
+                    controller.releaseTA();
 
-                // TODO: Change state to LEAVING
-                // TODO: Print: "Student X got help and is leaving!"
+                    // Take a break before coming back with another question (5-10 seconds)
+                    Thread.sleep(5000 + (long)(Math.random() * 5000));
 
-                // TODO: Release the TA back to controller
+                } else {
+                    // FAILED: No chairs available, must come back later
+                    setState(StudentState.RETURNING_LATER);
+                    System.out.println("Student " + id + " will come back later (no chairs)...");
 
-                // TODO: Take a break before coming back (sleep 5-10 seconds)
+                    // Wait before trying again (3-6 seconds)
+                    Thread.sleep(3000 + (long)(Math.random() * 3000));
+                }
             }
-
-            // IF NO HELP (false - no chairs available):
-            {
-                // TODO: Change state to RETURNING_LATER
-
-                // TODO: Wait before trying again (sleep 3-6 seconds)
-            }
-
+        } catch (InterruptedException e) {
+            System.out.println("Student " + id + " thread interrupted.");
+            Thread.currentThread().interrupt();
         }
-    }
-
-    public StudentState getSTDState() {
-        return state;
     }
 
     public void setState(StudentState newState) {
