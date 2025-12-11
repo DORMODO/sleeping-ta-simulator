@@ -25,6 +25,7 @@ public class GUIController {
                 }
 
                 controller.startSimulation(students, chairs, tas);
+                gui.startBtn.setEnabled(false); // Disable the button after starting
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(gui,
                         "Please enter valid integers for all fields.",
